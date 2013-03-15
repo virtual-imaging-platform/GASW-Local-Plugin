@@ -1,10 +1,8 @@
 /* Copyright CNRS-CREATIS
  *
- * Rafael Silva
+ * Rafael Ferreira da Silva
  * rafael.silva@creatis.insa-lyon.fr
  * http://www.rafaelsilva.com
- *
- * This software is a grid-enabled data-driven workflow manager and editor.
  *
  * This software is governed by the CeCILL  license under French law and
  * abiding by the rules of distribution of free software.  You can  use,
@@ -47,7 +45,7 @@ import org.apache.log4j.Logger;
 
 /**
  *
- * @author Rafael Silva
+ * @author Rafael Ferreira da Silva
  */
 public class LocalMonitor extends GaswMonitor {
 
@@ -145,6 +143,6 @@ public class LocalMonitor extends GaswMonitor {
     }
 
     @Override
-    protected void killReplicas(String fileName) {
+    protected void killReplicas(int invocationID) {
     }
 }
