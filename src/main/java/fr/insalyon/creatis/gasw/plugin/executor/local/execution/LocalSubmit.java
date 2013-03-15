@@ -1,10 +1,8 @@
 /* Copyright CNRS-CREATIS
  *
- * Rafael Silva
+ * Rafael Ferreira da Silva
  * rafael.silva@creatis.insa-lyon.fr
  * http://www.rafaelsilva.com
- *
- * This software is a grid-enabled data-driven workflow manager and editor.
  *
  * This software is governed by the CeCILL  license under French law and
  * abiding by the rules of distribution of free software.  You can  use,
@@ -58,7 +56,7 @@ import org.apache.log4j.Logger;
 
 /**
  *
- * @author Rafael Silva, Tram Truong Huu
+ * @author Rafael Ferreira da Silva, Tram Truong Huu
  */
 public class LocalSubmit extends GaswSubmit {
 
@@ -118,16 +116,15 @@ public class LocalSubmit extends GaswSubmit {
                 job.setDownload(new Date());
                 jobDAO.update(job);
 
-                Process process = GaswUtil.getProcess(logger, userProxy, "/bin/sh",
-                        GaswConstants.SCRIPT_ROOT + "/" + scriptName);
+                Process process = GaswUtil.getProcess(logger, false, userProxy,
+                        "/bin/sh", GaswConstants.SCRIPT_ROOT + "/" + scriptName);
 
-                BufferedReader r = GaswUtil.getBufferedReader(process);
-                StringBuilder cout = new StringBuilder();
-                String s = null;
-                while ((s = r.readLine()) != null) {
-                    cout.append(s).append("\n");
-                }
-                r.close();
+                StringWriter infos = new StringWriter();
+                StringWriter errors = new StringWriter();
+                StreamBoozer seInfo = new StreamBoozer(process.getInputStream(), new PrintWriter(infos, true));
+                StreamBoozer seError = new StreamBoozer(process.getErrorStream(), new PrintWriter(errors, true));
+                seInfo.start();
+                seError.start();
 
                 process.waitFor();
 
@@ -139,7 +136,7 @@ public class LocalSubmit extends GaswSubmit {
                 }
                 File stdOut = new File(stdOutDir, scriptName + ".out");
                 BufferedWriter out = new BufferedWriter(new FileWriter(stdOut));
-                out.write(cout.toString());
+                out.write(infos.toString());
                 out.close();
 
                 File stdErrDir = new File(GaswConstants.ERR_ROOT);
@@ -149,12 +146,13 @@ public class LocalSubmit extends GaswSubmit {
 
                 File stdErr = new File(stdErrDir, scriptName + ".err");
                 BufferedWriter err = new BufferedWriter(new FileWriter(stdErr));
-                err.write(cout.toString());
+                err.write(errors.toString());
                 err.close();
 
                 synchronized (this) {
                     finishedJobs.add(jobID + "--" + exitValue);
                 }
+
             } catch (DAOException ex) {
                 // do nothing
             } catch (InterruptedException ex) {
@@ -165,6 +163,37 @@ public class LocalSubmit extends GaswSubmit {
                 logger.error(ex);
             } catch (VOMSExtensionException ex) {
                 logger.error(ex);
+            }
+        }
+
+        class StreamBoozer extends Thread {
+
+            private InputStream in;
+            private PrintWriter pw;
+
+            StreamBoozer(InputStream in, PrintWriter pw) {
+                this.in = in;
+                this.pw = pw;
+            }
+
+            @Override
+            public void run() {
+                BufferedReader br = null;
+                try {
+                    br = new BufferedReader(new InputStreamReader(in));
+                    String line = null;
+                    while ((line = br.readLine()) != null) {
+                        pw.println(line);
+                    }
+                } catch (Exception ex) {
+                    logger.error(ex);
+                } finally {
+                    try {
+                        br.close();
+                    } catch (IOException ex) {
+                        logger.error(ex);
+                    }
+                }
             }
         }
     }
