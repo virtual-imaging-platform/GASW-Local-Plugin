@@ -38,8 +38,8 @@ import fr.insalyon.creatis.gasw.GaswConstants;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.GaswExitCode;
 import fr.insalyon.creatis.gasw.GaswOutput;
+import fr.insalyon.creatis.gasw.bean.Job;
 import fr.insalyon.creatis.gasw.execution.GaswOutputParser;
-import grool.proxy.Proxy;
 import java.io.File;
 import org.apache.log4j.Logger;
 
@@ -53,9 +53,9 @@ public class LocalOutputParser extends GaswOutputParser {
     private File stdOut;
     private File stdErr;
 
-    public LocalOutputParser(String jobID, Proxy userProxy) {
+    public LocalOutputParser(String jobID) {
 
-        super(jobID, userProxy);
+        super(jobID);
     }
 
     @Override
@@ -85,8 +85,13 @@ public class LocalOutputParser extends GaswOutputParser {
                 gaswExitCode = GaswExitCode.ERROR_WRITE_LOCAL;
                 break;
         }
-        
-        return new GaswOutput(job.getId(), gaswExitCode, "", uploadedResults, 
+
+        return new GaswOutput(job.getId(), gaswExitCode, "", uploadedResults,
                 appStdOut, appStdErr, stdOut, stdErr);
+    }
+
+    @Override
+    protected void resubmit() throws GaswException {
+        throw new GaswException("");
     }
 }
