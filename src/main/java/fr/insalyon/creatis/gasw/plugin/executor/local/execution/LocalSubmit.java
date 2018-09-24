@@ -43,10 +43,15 @@ import fr.insalyon.creatis.gasw.dao.JobDAO;
 import fr.insalyon.creatis.gasw.execution.GaswStatus;
 import fr.insalyon.creatis.gasw.execution.GaswSubmit;
 import fr.insalyon.creatis.gasw.plugin.executor.local.LocalConfiguration;
-import grool.proxy.Proxy;
-import grool.proxy.ProxyInitializationException;
-import grool.proxy.VOMSExtensionException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -68,10 +73,10 @@ public class LocalSubmit extends GaswSubmit {
     // these tasks will be put into a queue and execute when a thread is availableF
     private volatile static ExecutorService executionThreadPool;
 
-    public LocalSubmit(GaswInput gaswInput, Proxy userProxy,
+    public LocalSubmit(GaswInput gaswInput,
             LocalMinorStatusServiceGenerator minorStatusServiceGenerator) throws GaswException {
 
-        super(gaswInput, userProxy, minorStatusServiceGenerator);
+        super(gaswInput, minorStatusServiceGenerator);
 
         if (executionThreadPool == null) {
             executionThreadPool = Executors.newFixedThreadPool(LocalConfiguration.getInstance().getNumberOfThreads());
@@ -89,8 +94,8 @@ public class LocalSubmit extends GaswSubmit {
             params.append(" ");
         }
         String fileName = scriptName.substring(0, scriptName.lastIndexOf("."));
-        LocalMonitor.getInstance().add(fileName, gaswInput.getRelease().getSymbolicName(),
-                fileName, params.toString(), userProxy);
+        LocalMonitor.getInstance().add(fileName, gaswInput.getExecutableName(),
+                fileName, params.toString());
 
         executionThreadPool.execute(new Execution(fileName));
 
@@ -116,7 +121,7 @@ public class LocalSubmit extends GaswSubmit {
                 job.setDownload(new Date());
                 jobDAO.update(job);
 
-                Process process = GaswUtil.getProcess(logger, false, userProxy,
+                Process process = GaswUtil.getProcess(logger, false,
                         "/bin/sh", GaswConstants.SCRIPT_ROOT + "/" + scriptName);
 
                 StringWriter infos = new StringWriter();
@@ -158,10 +163,6 @@ public class LocalSubmit extends GaswSubmit {
             } catch (InterruptedException ex) {
                 logger.error(ex);
             } catch (IOException ex) {
-                logger.error(ex);
-            } catch (ProxyInitializationException ex) {
-                logger.error(ex);
-            } catch (VOMSExtensionException ex) {
                 logger.error(ex);
             }
         }

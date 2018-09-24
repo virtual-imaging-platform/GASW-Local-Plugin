@@ -36,10 +36,10 @@ import fr.insalyon.creatis.gasw.GaswConfiguration;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.bean.Job;
 import fr.insalyon.creatis.gasw.dao.DAOException;
+import fr.insalyon.creatis.gasw.dao.JobDAO;
 import fr.insalyon.creatis.gasw.execution.GaswMonitor;
 import fr.insalyon.creatis.gasw.execution.GaswStatus;
 import fr.insalyon.creatis.gasw.plugin.executor.local.LocalConstants;
-import grool.proxy.Proxy;
 import java.util.Date;
 import org.apache.log4j.Logger;
 
@@ -84,7 +84,7 @@ public class LocalMonitor extends GaswMonitor {
                         job.setStatus(GaswStatus.ERROR);
                     }
                     jobDAO.update(job);
-                    new LocalOutputParser(job.getId(), null).start();
+                    new LocalOutputParser(job.getId()).start();
                 }
 
                 Thread.sleep(GaswConfiguration.getInstance().getDefaultSleeptime());
@@ -101,7 +101,7 @@ public class LocalMonitor extends GaswMonitor {
 
     @Override
     public synchronized void add(String jobID, String symbolicName, String fileName,
-            String parameters, Proxy userProxy) throws GaswException {
+            String parameters) throws GaswException {
 
         logger.info("Adding job: " + jobID);
         Job job = new Job(jobID, GaswConfiguration.getInstance().getSimulationID(),
@@ -131,18 +131,22 @@ public class LocalMonitor extends GaswMonitor {
     }
 
     @Override
-    protected void kill(String jobID) {
+    protected void kill(Job job) {
     }
 
     @Override
-    protected void reschedule(String jobID) {
+    protected void reschedule(Job job) {
     }
 
     @Override
-    protected void replicate(String jobID) {
+    protected void replicate(Job job) {
     }
 
     @Override
-    protected void killReplicas(int invocationID) {
+    protected void killReplicas(Job job) {
+    }
+
+    @Override
+    protected void resume(Job job) {
     }
 }
