@@ -43,6 +43,7 @@ import fr.insalyon.creatis.gasw.plugin.executor.local.execution.LocalSubmit;
 import java.util.ArrayList;
 import java.util.List;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -50,6 +51,8 @@ import net.xeoh.plugins.base.annotations.PluginImplementation;
  */
 @PluginImplementation
 public class LocalExecutor implements ExecutorPlugin {
+
+    private static final Logger logger = Logger.getLogger("fr.insalyon.creatis.gasw");
 
     private LocalSubmit localSubmit;
 
@@ -60,6 +63,10 @@ public class LocalExecutor implements ExecutorPlugin {
 
     @Override
     public void load(GaswInput gaswInput) throws GaswException {
+
+        // fetch version from maven generated file
+        logger.info("Loading local GASW Plugin version "
+                + getClass().getPackage().getImplementationVersion());
 
         LocalConfiguration.getInstance();
         localSubmit = new LocalSubmit(gaswInput, new LocalMinorStatusServiceGenerator());
