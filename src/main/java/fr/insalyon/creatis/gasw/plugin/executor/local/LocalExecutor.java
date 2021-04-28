@@ -65,7 +65,7 @@ public class LocalExecutor implements ExecutorPlugin {
     public void load(GaswInput gaswInput) throws GaswException {
 
         // fetch version from maven generated file
-        logger.info("Loading local GASW Plugin version "
+        logger.info("Testing local GASW Plugin version "
                 + getClass().getPackage().getImplementationVersion());
 
         LocalConfiguration.getInstance();
