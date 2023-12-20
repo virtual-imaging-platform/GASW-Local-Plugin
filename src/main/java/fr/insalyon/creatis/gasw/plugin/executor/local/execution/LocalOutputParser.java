@@ -61,8 +61,10 @@ public class LocalOutputParser extends GaswOutputParser {
     @Override
     public GaswOutput getGaswOutput() throws GaswException {
 
-        stdOut = new File(GaswConstants.OUT_ROOT + "/" + job.getFileName() + ".sh.out");
-        stdErr = new File(GaswConstants.ERR_ROOT + "/" + job.getFileName() + ".sh.err");
+        stdOut = getAppStdFile(GaswConstants.OUT_EXT, GaswConstants.OUT_ROOT);
+        stdErr = getAppStdFile(GaswConstants.ERR_EXT, GaswConstants.ERR_ROOT);
+
+        moveProvenanceFile(".");
 
         int exitCode = parseStdOut(stdOut);
         exitCode = parseStdErr(stdErr, exitCode);
