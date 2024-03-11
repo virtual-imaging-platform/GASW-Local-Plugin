@@ -154,6 +154,8 @@ public class LocalSubmit extends GaswSubmit {
                 err.write(errors.toString());
                 err.close();
 
+
+
                 synchronized (this) {
                     finishedJobs.add(jobID + "--" + exitValue);
                 }
