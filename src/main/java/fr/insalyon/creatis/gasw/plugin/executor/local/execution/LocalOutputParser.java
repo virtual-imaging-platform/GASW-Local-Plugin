@@ -38,7 +38,6 @@ import fr.insalyon.creatis.gasw.GaswConstants;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.GaswExitCode;
 import fr.insalyon.creatis.gasw.GaswOutput;
-import fr.insalyon.creatis.gasw.bean.Job;
 import fr.insalyon.creatis.gasw.execution.GaswOutputParser;
 import java.io.File;
 import org.apache.log4j.Logger;
