@@ -76,7 +76,7 @@ public class LocalMonitor extends GaswMonitor {
 
                     String[] s = LocalSubmit.pullFinishedJobID().split("--");
                     Job job = jobDAO.getJobByID(s[0]);
-                    job.setExitCode(new Integer(s[1]));
+                    job.setExitCode(Integer.parseInt(s[1]));
 
                     if (job.getExitCode() == 0) {
                         job.setStatus(GaswStatus.COMPLETED);
