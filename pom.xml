@@ -4,17 +4,17 @@
 
     <groupId>fr.insalyon.creatis</groupId>
     <artifactId>gasw-local-plugin</artifactId>
-    <version>3.2.0</version>
+    <version>4.0</version>
     <packaging>jar</packaging>
 
     <name>GASW-Local-Plugin</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
 
-        <gasw-version>3.10.0</gasw-version>
+        <gasw-version>4.0</gasw-version>
     </properties>
 
     <licenses>
@@ -93,7 +93,5 @@
             <name>Internal Snapshots</name>
             <url>https://vip.creatis.insa-lyon.fr:9007/nexus/repository/snapshots</url>
         </snapshotRepository>
-
     </distributionManagement>
-
 </project>
