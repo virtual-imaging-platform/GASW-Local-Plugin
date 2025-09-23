@@ -40,15 +40,13 @@ import fr.insalyon.creatis.gasw.GaswExitCode;
 import fr.insalyon.creatis.gasw.GaswOutput;
 import fr.insalyon.creatis.gasw.execution.GaswOutputParser;
 import java.io.File;
-import org.apache.log4j.Logger;
 
-/**
- *
- * @author Rafael Silva, Tram Truong Huu
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class LocalOutputParser extends GaswOutputParser {
 
-    private static final Logger logger = Logger.getLogger("fr.insalyon.creatis.gasw");
+    private static final Logger logger = LoggerFactory.getLogger(LocalOutputParser.class);
     private File stdOut;
     private File stdErr;
 

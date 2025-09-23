@@ -57,15 +57,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import org.apache.log4j.Logger;
 
-/**
- *
- * @author Rafael Ferreira da Silva, Tram Truong Huu
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class LocalSubmit extends GaswSubmit {
 
-    private static final Logger logger = Logger.getLogger("fr.insalyon.creatis.gasw");
+    private static final Logger logger = LoggerFactory.getLogger(LocalSubmit.class);
     private static List<String> finishedJobs = new ArrayList<String>();
     // Thread pool containing all invocation threads
     // Initialize a pool of threads with a maximum number of threads
@@ -163,9 +161,9 @@ public class LocalSubmit extends GaswSubmit {
             } catch (DAOException ex) {
                 // do nothing
             } catch (InterruptedException ex) {
-                logger.error(ex);
+                logger.error("Error:", ex);
             } catch (IOException ex) {
-                logger.error(ex);
+                logger.error("Error:", ex);
             }
         }
 
@@ -189,12 +187,12 @@ public class LocalSubmit extends GaswSubmit {
                         pw.println(line);
                     }
                 } catch (Exception ex) {
-                    logger.error(ex);
+                    logger.error("Error:", ex);
                 } finally {
                     try {
                         br.close();
                     } catch (IOException ex) {
-                        logger.error(ex);
+                        logger.error("Error:", ex);
                     }
                 }
             }

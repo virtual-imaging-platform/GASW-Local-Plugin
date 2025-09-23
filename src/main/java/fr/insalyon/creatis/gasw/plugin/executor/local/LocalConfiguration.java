@@ -38,15 +38,12 @@ import fr.insalyon.creatis.gasw.GaswConfiguration;
 import fr.insalyon.creatis.gasw.GaswException;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- *
- * @author Rafael Silva
- */
 public class LocalConfiguration {
 
-    private static final Logger logger = Logger.getLogger("fr.insalyon.creatis.gasw");
+    private static final Logger logger = LoggerFactory.getLogger(LocalConfiguration.class);
     private static LocalConfiguration instance;
     private int numberOfThreads;
 
@@ -70,7 +67,7 @@ public class LocalConfiguration {
             config.save();
 
         } catch (ConfigurationException ex) {
-            logger.error(ex);
+            logger.error("Error:", ex);
         }
     }
 

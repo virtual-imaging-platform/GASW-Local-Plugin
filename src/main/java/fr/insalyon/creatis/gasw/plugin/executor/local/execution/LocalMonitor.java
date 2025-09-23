@@ -36,20 +36,17 @@ import fr.insalyon.creatis.gasw.GaswConfiguration;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.bean.Job;
 import fr.insalyon.creatis.gasw.dao.DAOException;
-import fr.insalyon.creatis.gasw.dao.JobDAO;
 import fr.insalyon.creatis.gasw.execution.GaswMonitor;
 import fr.insalyon.creatis.gasw.execution.GaswStatus;
 import fr.insalyon.creatis.gasw.plugin.executor.local.LocalConstants;
 import java.util.Date;
-import org.apache.log4j.Logger;
 
-/**
- *
- * @author Rafael Ferreira da Silva
- */
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class LocalMonitor extends GaswMonitor {
 
-    private static final Logger logger = Logger.getLogger("fr.insalyon.creatis.gasw");
+    private static final Logger logger = LoggerFactory.getLogger(LocalMonitor.class);
     private static LocalMonitor instance;
     private boolean stop;
 
@@ -92,9 +89,9 @@ public class LocalMonitor extends GaswMonitor {
             } catch (GaswException ex) {
                 // do nothing
             } catch (DAOException ex) {
-                logger.error(ex);
+                logger.error("Error:", ex);
             } catch (InterruptedException ex) {
-                logger.error(ex);
+                logger.error("Error:", ex);
             }
         }
     }
