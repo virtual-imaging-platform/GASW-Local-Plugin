@@ -78,7 +78,7 @@ public class LocalExecutor implements ExecutorPlugin {
     }
 
     @Override
-    public void terminate() throws GaswException {
+    public void terminate(boolean force) throws GaswException {
 
         LocalSubmit.terminate();
         LocalMonitor.getInstance().terminate();
