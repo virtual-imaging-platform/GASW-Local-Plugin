@@ -66,24 +66,7 @@ public class LocalOutputParser extends GaswOutputParser {
         int exitCode = parseStdOut(stdOut);
         exitCode = parseStdErr(stdErr, exitCode);
 
-        GaswExitCode gaswExitCode = GaswExitCode.UNDEFINED;
-        switch (exitCode) {
-            case 0:
-                gaswExitCode = GaswExitCode.SUCCESS;
-                break;
-            case 1:
-                gaswExitCode = GaswExitCode.ERROR_READ_GRID;
-                break;
-            case 2:
-                gaswExitCode = GaswExitCode.ERROR_WRITE_GRID;
-                break;
-            case 6:
-                gaswExitCode = GaswExitCode.EXECUTION_FAILED;
-                break;
-            case 7:
-                gaswExitCode = GaswExitCode.ERROR_WRITE_LOCAL;
-                break;
-        }
+        GaswExitCode gaswExitCode = GaswExitCode.fromExitCode(exitCode);
 
         return new GaswOutput(job.getId(), gaswExitCode, "", uploadedResults,
                 appStdOut, appStdErr, stdOut, stdErr);
