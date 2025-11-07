@@ -159,10 +159,8 @@ public class LocalSubmit extends GaswSubmit {
                 }
 
             } catch (DAOException ex) {
-                // do nothing
-            } catch (InterruptedException ex) {
                 logger.error("Error:", ex);
-            } catch (IOException ex) {
+            } catch (InterruptedException | IOException ex) {
                 logger.error("Error:", ex);
             }
         }
