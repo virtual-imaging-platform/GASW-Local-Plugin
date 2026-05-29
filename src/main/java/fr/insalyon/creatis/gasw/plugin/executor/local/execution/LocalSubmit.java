@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,8 +93,8 @@ public class LocalSubmit extends GaswSubmit {
             params.append(" ");
         }
         String fileName = scriptName.substring(0, scriptName.lastIndexOf("."));
-        LocalMonitor.getInstance().add(fileName, gaswInput.getExecutableName(),
-                fileName, params.toString());
+        String command = FilenameUtils.getBaseName(gaswInput.getExecutableName());
+        LocalMonitor.getInstance().add(fileName, command, fileName, params.toString());
 
         executionThreadPool.execute(new Execution(fileName));
 
