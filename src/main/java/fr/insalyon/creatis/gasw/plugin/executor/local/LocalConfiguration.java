@@ -34,42 +34,16 @@
  */
 package fr.insalyon.creatis.gasw.plugin.executor.local;
 
-import fr.insalyon.creatis.gasw.GaswConfiguration;
-import fr.insalyon.creatis.gasw.GaswException;
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 
+@Configuration
+@PropertySource("classpath:application.properties")
 public class LocalConfiguration {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocalConfiguration.class);
-    private static LocalConfiguration instance;
+    @Value("${plugin.local.threads}")
     private int numberOfThreads;
-
-    public static LocalConfiguration getInstance() throws GaswException {
-
-        if (instance == null) {
-            instance = new LocalConfiguration();
-        }
-        return instance;
-    }
-
-    private LocalConfiguration() throws GaswException {
-
-        try {
-            PropertiesConfiguration config = GaswConfiguration.getInstance().getPropertiesConfiguration();
-
-            numberOfThreads = config.getInt(LocalConstants.LAB_NUMBER_OF_THREADS, 100);
-
-            config.setProperty(LocalConstants.LAB_NUMBER_OF_THREADS, numberOfThreads);
-
-            config.save();
-
-        } catch (ConfigurationException ex) {
-            logger.error("Error:", ex);
-        }
-    }
 
     public int getNumberOfThreads() {
         return numberOfThreads;

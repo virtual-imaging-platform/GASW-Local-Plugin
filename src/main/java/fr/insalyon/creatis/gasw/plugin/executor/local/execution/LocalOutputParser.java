@@ -34,42 +34,55 @@
  */
 package fr.insalyon.creatis.gasw.plugin.executor.local.execution;
 
-import fr.insalyon.creatis.gasw.GaswConstants;
-import fr.insalyon.creatis.gasw.GaswException;
-import fr.insalyon.creatis.gasw.GaswExitCode;
+import fr.insalyon.creatis.gasw.GaswConfiguration;
+import fr.insalyon.creatis.gasw.GaswNotification;
 import fr.insalyon.creatis.gasw.GaswOutput;
+import fr.insalyon.creatis.gasw.GaswExitCode;
+import fr.insalyon.creatis.gasw.GaswException;
+import fr.insalyon.creatis.gasw.GaswConstants;
+import fr.insalyon.creatis.gasw.dao.JobDAO;
+import fr.insalyon.creatis.gasw.dao.JobMinorStatusDAO;
+import fr.insalyon.creatis.gasw.dao.NodeDAO;
 import fr.insalyon.creatis.gasw.execution.GaswOutputParser;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
+import fr.insalyon.creatis.gasw.execution.GaswParsingContext;
+import fr.insalyon.creatis.gasw.plugin.ListenerPlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
+@Service
 public class LocalOutputParser extends GaswOutputParser {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocalOutputParser.class);
-    private File stdOut;
-    private File stdErr;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public LocalOutputParser(String jobID) {
-
-        super(jobID);
+    public LocalOutputParser(GaswConfiguration config, GaswNotification gaswNotification,
+                               JobDAO jobDAO, JobMinorStatusDAO jobMinorStatusDAO, NodeDAO nodeDAO, List<ListenerPlugin> listenerPlugins) {
+        super(config, gaswNotification, jobDAO, jobMinorStatusDAO, nodeDAO, listenerPlugins);
     }
 
     @Override
-    public GaswOutput getGaswOutput() throws GaswException {
+    public GaswOutput getGaswOutput(GaswParsingContext context) throws GaswException {
 
-        stdOut = getAppStdFile(GaswConstants.OUT_EXT, GaswConstants.OUT_ROOT);
-        stdErr = getAppStdFile(GaswConstants.ERR_EXT, GaswConstants.ERR_ROOT);
+        try {
+            File stdOut = context.getAppStdFile(GaswConstants.OUT_EXT, GaswConstants.OUT_ROOT);
+            File stdErr = context.getAppStdFile(GaswConstants.ERR_EXT, GaswConstants.ERR_ROOT);
 
-        moveProvenanceFile(".");
+            moveProvenanceFile(".", context);
 
-        int exitCode = parseStdOut(stdOut);
-        exitCode = parseStdErr(stdErr, exitCode);
+            int exitCode = parseStdOut(stdOut, context);
+            exitCode = parseStdErr(stdErr, exitCode, context);
 
-        GaswExitCode gaswExitCode = GaswExitCode.fromExitCode(exitCode);
+            GaswExitCode gaswExitCode = GaswExitCode.fromExitCode(exitCode);
 
-        return new GaswOutput(job.getId(), gaswExitCode, "", uploadedResults,
-                appStdOut, appStdErr, stdOut, stdErr);
+            return new GaswOutput(context.getJob().getId(), gaswExitCode, "", context.getUploadedResults(),
+                    context.getAppStdOutFile(), context.getAppStdErrFile(), stdOut, stdErr);
+        } catch (IOException ex) {
+            throw new GaswException("Error parsing output", ex);
+        }
     }
 
     @Override
