@@ -42,6 +42,4 @@ package fr.insalyon.creatis.gasw.plugin.executor.local;
 public class LocalConstants {
 
     public static final String EXECUTOR_NAME = "Local";
-    // Configuration Labels
-    public static final String LAB_NUMBER_OF_THREADS = "plugin.local.threads";
 }

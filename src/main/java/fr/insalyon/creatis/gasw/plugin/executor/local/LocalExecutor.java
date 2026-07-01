@@ -34,24 +34,28 @@
  */
 package fr.insalyon.creatis.gasw.plugin.executor.local;
 
-import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.GaswInput;
+import fr.insalyon.creatis.gasw.execution.GaswMonitor;
 import fr.insalyon.creatis.gasw.plugin.ExecutorPlugin;
-import fr.insalyon.creatis.gasw.plugin.executor.local.execution.LocalMinorStatusServiceGenerator;
 import fr.insalyon.creatis.gasw.plugin.executor.local.execution.LocalMonitor;
 import fr.insalyon.creatis.gasw.plugin.executor.local.execution.LocalSubmit;
-import java.util.ArrayList;
-import java.util.List;
-import net.xeoh.plugins.base.annotations.PluginImplementation;
+import jakarta.annotation.PreDestroy;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author Rafael Silva
  */
-@PluginImplementation
+@Service
 public class LocalExecutor implements ExecutorPlugin {
 
-    private LocalSubmit localSubmit;
+    private final LocalSubmit localSubmit;
+    private final LocalMonitor localMonitor;
+
+    public LocalExecutor(LocalSubmit localSubmit, LocalMonitor localMonitor) {
+        this.localSubmit = localSubmit;
+        this.localMonitor = localMonitor;
+    }
 
     @Override
     public String getName() {
@@ -59,28 +63,18 @@ public class LocalExecutor implements ExecutorPlugin {
     }
 
     @Override
-    public void load(GaswInput gaswInput) throws GaswException {
+    public String submit(GaswInput gaswInput) {
+        return localSubmit.submit(gaswInput, localMonitor);
+    }
 
-        LocalConfiguration.getInstance();
-        localSubmit = new LocalSubmit(gaswInput, new LocalMinorStatusServiceGenerator());
+    @PreDestroy
+    public void terminate() {
+        terminate(false);
     }
 
     @Override
-    public List<Class> getPersistentClasses() throws GaswException {
-
-        return new ArrayList<Class>();
-    }
-
-    @Override
-    public String submit() throws GaswException {
-
-        return localSubmit.submit();
-    }
-
-    @Override
-    public void terminate(boolean force) throws GaswException {
-
-        LocalSubmit.terminate();
-        LocalMonitor.getInstance().terminate();
+    public void terminate(boolean force) {
+        localSubmit.terminate(force);
+        localMonitor.terminate();
     }
 }

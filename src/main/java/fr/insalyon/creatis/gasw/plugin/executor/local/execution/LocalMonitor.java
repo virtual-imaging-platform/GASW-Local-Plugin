@@ -36,72 +36,74 @@ import fr.insalyon.creatis.gasw.GaswConfiguration;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.bean.Job;
 import fr.insalyon.creatis.gasw.dao.DAOException;
+import fr.insalyon.creatis.gasw.dao.JobDAO;
 import fr.insalyon.creatis.gasw.execution.GaswMonitor;
+import fr.insalyon.creatis.gasw.execution.GaswParsingContext;
 import fr.insalyon.creatis.gasw.execution.GaswStatus;
+import fr.insalyon.creatis.gasw.plugin.ListenerPlugin;
 import fr.insalyon.creatis.gasw.plugin.executor.local.LocalConstants;
+
+import java.io.IOException;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Service
 public class LocalMonitor extends GaswMonitor {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocalMonitor.class);
-    private static LocalMonitor instance;
-    private boolean stop;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public synchronized static LocalMonitor getInstance() {
-        if (instance == null) {
-            instance = new LocalMonitor();
-            instance.start();
-        }
-        return instance;
+    private final GaswConfiguration gaswConfiguration;
+    private final JobDAO jobDAO;
+    private final LocalSubmit localSubmit;
+    private final LocalOutputParser localOutputParser;
+    private final AtomicBoolean stop = new AtomicBoolean(false);
+
+    public LocalMonitor(GaswConfiguration config, JobDAO jobDAO, List<ListenerPlugin> listenerPlugins,
+                        LocalSubmit localSubmit, LocalOutputParser localOutputParser) {
+        super(config, jobDAO, listenerPlugins);
+        this.gaswConfiguration = config;
+        this.jobDAO = jobDAO;
+        this.localSubmit = localSubmit;
+        this.localOutputParser = localOutputParser;
     }
 
-    private LocalMonitor() {
+    @Scheduled(fixedDelayString = "${gasw.default.sleep-time}", timeUnit = TimeUnit.SECONDS)
+    public void monitorJobs() {
+        if (stop.get()) return;
+        try {
+            while (localSubmit.hasFinishedJobs()) {
+                String[] s = localSubmit.pullFinishedJobID().split("--");
+                Job job = jobDAO.getJobByID(s[0]);
+                job.setExitCode(Integer.parseInt(s[1]));
 
-        super();
-        stop = false;
-    }
-
-    @Override
-    public void run() {
-
-        while (!stop) {
-            try {
-                while (LocalSubmit.hasFinishedJobs()) {
-
-                    String[] s = LocalSubmit.pullFinishedJobID().split("--");
-                    Job job = jobDAO.getJobByID(s[0]);
-                    job.setExitCode(Integer.parseInt(s[1]));
-
-                    if (job.getExitCode() == 0) {
-                        job.setStatus(GaswStatus.COMPLETED);
-                    } else {
-                        job.setStatus(GaswStatus.ERROR);
-                    }
-                    jobDAO.update(job);
-                    new LocalOutputParser(job.getId()).start();
+                if (job.getExitCode() == 0) {
+                    job.setStatus(GaswStatus.COMPLETED);
+                } else {
+                    job.setStatus(GaswStatus.ERROR);
                 }
-
-                Thread.sleep(GaswConfiguration.getInstance().getDefaultSleeptime());
-
-            } catch (GaswException ex) {
-                // do nothing
-            } catch (DAOException ex) {
-                logger.error("Error:", ex);
-            } catch (InterruptedException ex) {
-                logger.error("Error:", ex);
+                jobDAO.update(job);
+                localOutputParser.run(new GaswParsingContext(job));
             }
+        } catch (DAOException | IOException ex) {
+            logger.error("Error monitoring jobs:", ex);
         }
     }
 
     @Override
-    public synchronized void add(String jobID, String symbolicName, String fileName,
+    @Transactional
+    public void add(String jobID, String symbolicName, String fileName,
             String parameters) throws GaswException {
 
-        logger.info("Adding job: " + jobID);
-        Job job = new Job(jobID, GaswConfiguration.getInstance().getSimulationID(),
+        logger.info("Adding job: {}", jobID);
+        Job job = new Job(jobID, gaswConfiguration.getSimulationID(),
                 GaswStatus.QUEUED, symbolicName, fileName, parameters,
                 LocalConstants.EXECUTOR_NAME);
         add(job);
@@ -115,16 +117,12 @@ public class LocalMonitor extends GaswMonitor {
         }
     }
 
-    public synchronized void terminate() {
+    @Override
+    public void start() {}
 
-        stop = true;
-        instance = null;
-    }
-
-    public static void finish() {
-        if (instance != null) {
-            instance.terminate();
-        }
+    @Override
+    public void terminate() {
+        stop.set(true);
     }
 
     @Override

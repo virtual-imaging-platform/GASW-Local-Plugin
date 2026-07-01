@@ -35,11 +35,13 @@
 package fr.insalyon.creatis.gasw.plugin.executor.local.execution;
 
 import fr.insalyon.creatis.gasw.execution.GaswMinorStatusServiceGenerator;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author Rafael Silva
  */
+@Service
 public class LocalMinorStatusServiceGenerator extends GaswMinorStatusServiceGenerator {
 
     @Override
