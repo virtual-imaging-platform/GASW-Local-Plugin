@@ -34,8 +34,8 @@
  */
 package fr.insalyon.creatis.gasw.plugin.executor.local;
 
-import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.GaswInput;
+import fr.insalyon.creatis.gasw.execution.GaswMonitor;
 import fr.insalyon.creatis.gasw.plugin.ExecutorPlugin;
 import fr.insalyon.creatis.gasw.plugin.executor.local.execution.LocalMonitor;
 import fr.insalyon.creatis.gasw.plugin.executor.local.execution.LocalSubmit;
@@ -63,13 +63,8 @@ public class LocalExecutor implements ExecutorPlugin {
     }
 
     @Override
-    public String getEntityPackage() {
-        return LocalConstants.ENTITY_PACKAGE;
-    }
-
-    @Override
     public String submit(GaswInput gaswInput) {
-        return localSubmit.submit(gaswInput);
+        return localSubmit.submit(gaswInput, localMonitor);
     }
 
     @PreDestroy
@@ -79,7 +74,7 @@ public class LocalExecutor implements ExecutorPlugin {
 
     @Override
     public void terminate(boolean force) {
-        localSubmit.terminate();
+        localSubmit.terminate(force);
         localMonitor.terminate();
     }
 }

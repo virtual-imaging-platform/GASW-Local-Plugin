@@ -32,14 +32,12 @@
  */
 package fr.insalyon.creatis.gasw.plugin.executor.local.execution;
 
-import fr.insalyon.creatis.gasw.GaswConfiguration;
-import fr.insalyon.creatis.gasw.GaswInput;
-import fr.insalyon.creatis.gasw.GaswException;
-import fr.insalyon.creatis.gasw.GaswConstants;
+import fr.insalyon.creatis.gasw.*;
 import fr.insalyon.creatis.gasw.bean.Job;
 import fr.insalyon.creatis.gasw.dao.DAOException;
 import fr.insalyon.creatis.gasw.dao.JobDAO;
 import fr.insalyon.creatis.gasw.execution.FailOver;
+import fr.insalyon.creatis.gasw.execution.GaswMonitor;
 import fr.insalyon.creatis.gasw.execution.GaswStatus;
 import fr.insalyon.creatis.gasw.execution.GaswSubmit;
 import fr.insalyon.creatis.gasw.plugin.executor.local.LocalConfiguration;
@@ -54,7 +52,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import fr.insalyon.creatis.gasw.script.MoteurliteConfigGenerator;
 import jakarta.annotation.PreDestroy;
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -65,7 +62,6 @@ public class LocalSubmit extends GaswSubmit {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final LocalConfiguration localConfiguration;
-    private final LocalMonitor localMonitor;
     private final JobDAO jobDAO;
 
     private final BlockingQueue<String> finishedJobs = new LinkedBlockingQueue<>();
@@ -76,18 +72,17 @@ public class LocalSubmit extends GaswSubmit {
     private final ExecutorService executorService;
 
     public LocalSubmit(GaswConfiguration config, FailOver failOver, MoteurliteConfigGenerator moteurliteConfigGenerator,
-                       LocalConfiguration localConfiguration, LocalMonitor localMonitor, JobDAO jobDAO) {
+                       LocalConfiguration localConfiguration, JobDAO jobDAO) {
         super(config, failOver, moteurliteConfigGenerator);
         this.localConfiguration = localConfiguration;
-        this.localMonitor = localMonitor;
         this.jobDAO = jobDAO;
         executorService = Executors.newFixedThreadPool(this.localConfiguration.getNumberOfThreads());
     }
 
     @Override
-    public String submit(GaswInput gaswInput) {
+    public String submit(GaswInput gaswInput, GaswMonitor localMonitor) {
         try {
-            super.submit(gaswInput);
+            super.submit(gaswInput, localMonitor);
             scriptName = generateScript(gaswInput);
             StringBuilder params = new StringBuilder();
             for (String p : gaswInput.getParameters()) {
@@ -95,7 +90,7 @@ public class LocalSubmit extends GaswSubmit {
                 params.append(" ");
             }
             String fileName = scriptName.substring(0, scriptName.lastIndexOf("."));
-            String command = FilenameUtils.getBaseName(gaswInput.getExecutableName());
+            String command = GaswUtil.getBaseName(gaswInput.getExecutableName());
             localMonitor.add(fileName, command, fileName, params.toString());
 
             executorService.execute(new Execution(fileName, scriptName, jobDAO));
@@ -108,6 +103,10 @@ public class LocalSubmit extends GaswSubmit {
         }
     }
 
+    public void addFinishedJobID(String jobID) {
+        finishedJobs.offer(jobID);
+    }
+
     public String pullFinishedJobID() {
         return finishedJobs.poll();
     }
@@ -116,13 +115,19 @@ public class LocalSubmit extends GaswSubmit {
         return !finishedJobs.isEmpty();
     }
 
-    /**
-     * Terminates the thread pool.
-     */
     @PreDestroy
     public void terminate() {
-        if (executorService != null) {
+        terminate(false);
+    }
+
+    public void terminate(boolean force) {
+        // Shutdown executor service
+        if (executorService == null) return;
+
+        if (force) {
             executorService.shutdownNow();
+        } else {
+            executorService.shutdown();
         }
     }
 
@@ -158,7 +163,7 @@ public class LocalSubmit extends GaswSubmit {
                 processBuilder.redirectError(stdErr);
 
                 int exitValue = processBuilder.start().waitFor();
-                finishedJobs.offer(jobID + "--" + exitValue);
+                addFinishedJobID(jobID + "--" + exitValue);
             } catch (DAOException | InterruptedException | IOException ex) {
                 logger.error("Error:", ex);
             }

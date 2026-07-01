@@ -40,6 +40,7 @@ import fr.insalyon.creatis.gasw.GaswOutput;
 import fr.insalyon.creatis.gasw.GaswExitCode;
 import fr.insalyon.creatis.gasw.GaswException;
 import fr.insalyon.creatis.gasw.GaswConstants;
+import fr.insalyon.creatis.gasw.dao.DataDAO;
 import fr.insalyon.creatis.gasw.dao.JobDAO;
 import fr.insalyon.creatis.gasw.dao.JobMinorStatusDAO;
 import fr.insalyon.creatis.gasw.dao.NodeDAO;
@@ -60,8 +61,9 @@ public class LocalOutputParser extends GaswOutputParser {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public LocalOutputParser(GaswConfiguration config, GaswNotification gaswNotification,
-                               JobDAO jobDAO, JobMinorStatusDAO jobMinorStatusDAO, NodeDAO nodeDAO, List<ListenerPlugin> listenerPlugins) {
-        super(config, gaswNotification, jobDAO, jobMinorStatusDAO, nodeDAO, listenerPlugins);
+                             JobDAO jobDAO, JobMinorStatusDAO jobMinorStatusDAO, NodeDAO nodeDAO,
+                             DataDAO dataDAO, List<ListenerPlugin> listenerPlugins) {
+        super(config, gaswNotification, jobDAO, jobMinorStatusDAO, nodeDAO, dataDAO, listenerPlugins);
     }
 
     @Override

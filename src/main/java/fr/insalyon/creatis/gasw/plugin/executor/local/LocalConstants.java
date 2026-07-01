@@ -42,5 +42,4 @@ package fr.insalyon.creatis.gasw.plugin.executor.local;
 public class LocalConstants {
 
     public static final String EXECUTOR_NAME = "Local";
-    public static final String ENTITY_PACKAGE = "fr.insalyon.creatis.gasw.plugin.executor.local";
 }

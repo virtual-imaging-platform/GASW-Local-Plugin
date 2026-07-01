@@ -39,7 +39,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 @Configuration
-@PropertySource("classpath:application.properties")
+@PropertySource("classpath:local-plugin.properties")
 public class LocalConfiguration {
 
     @Value("${plugin.local.threads}")

@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,7 @@ public class LocalMonitor extends GaswMonitor {
     private final JobDAO jobDAO;
     private final LocalSubmit localSubmit;
     private final LocalOutputParser localOutputParser;
+    private final AtomicBoolean stop = new AtomicBoolean(false);
 
     public LocalMonitor(GaswConfiguration config, JobDAO jobDAO, List<ListenerPlugin> listenerPlugins,
                         LocalSubmit localSubmit, LocalOutputParser localOutputParser) {
@@ -74,7 +76,8 @@ public class LocalMonitor extends GaswMonitor {
     }
 
     @Scheduled(fixedDelayString = "${gasw.default.sleep-time}", timeUnit = TimeUnit.SECONDS)
-    private void monitorJobs() {
+    public void monitorJobs() {
+        if (stop.get()) return;
         try {
             while (localSubmit.hasFinishedJobs()) {
                 String[] s = localSubmit.pullFinishedJobID().split("--");
@@ -118,7 +121,9 @@ public class LocalMonitor extends GaswMonitor {
     public void start() {}
 
     @Override
-    public void terminate() {}
+    public void terminate() {
+        stop.set(true);
+    }
 
     @Override
     protected void kill(Job job) {
