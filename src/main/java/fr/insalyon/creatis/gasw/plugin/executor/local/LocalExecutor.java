@@ -61,7 +61,7 @@ public class LocalExecutor implements ExecutorPlugin {
     @Override
     public void load(GaswInput gaswInput) throws GaswException {
 
-        LocalConfiguration.getInstance();
+        LocalConfiguration.getInstance().loadLocalConfig();
         localSubmit = new LocalSubmit(gaswInput, new LocalMinorStatusServiceGenerator());
     }
 
@@ -75,6 +75,11 @@ public class LocalExecutor implements ExecutorPlugin {
     public String submit() throws GaswException {
 
         return localSubmit.submit();
+    }
+
+    @Override
+    public GaswInput getGaswInput() {
+        return localSubmit.getGaswInput();
     }
 
     @Override
