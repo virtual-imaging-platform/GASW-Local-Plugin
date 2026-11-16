@@ -218,6 +218,7 @@ public class LocalSubmit extends GaswSubmit {
 
         if (executionThreadPool != null) {
             executionThreadPool.shutdown();
+            executionThreadPool = null;
         }
     }
 }

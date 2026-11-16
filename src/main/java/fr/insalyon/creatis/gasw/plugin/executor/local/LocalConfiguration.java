@@ -55,8 +55,9 @@ public class LocalConfiguration {
         return instance;
     }
 
-    private LocalConfiguration() throws GaswException {
+    private LocalConfiguration() {}
 
+    public void loadLocalConfig() throws GaswException {
         try {
             PropertiesConfiguration config = GaswConfiguration.getInstance().getPropertiesConfiguration();
 
